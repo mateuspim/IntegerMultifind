@@ -10,9 +10,9 @@ OBJ = p2.o
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-# Compiles the IntegerMultifind executable.
+# Compiles the "multifind" executable.
 # Compilation command: make
-IntegerMultifind: $(OBJ)
+multifind: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 # Cleans the directory (deleting the object files).
