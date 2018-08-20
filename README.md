@@ -9,6 +9,16 @@ Contributors:
 * [Gustavo Polli](https://github.com/gapolli)
 * [Mateus Santos](https://github.com/mateuspim)
 
+Compilation:
+At the Terminal or other Shell interpreter, type the following
+```
+make
+```
+Obs.: After the compilation is successful, clean the garbage with the following command
+```
+make clean
+```
+
 Usage:
 At the Terminal or other Shell interpreter, type the following
 ```
