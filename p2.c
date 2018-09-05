@@ -88,7 +88,7 @@ int main (int argc, char *argv[]){
     }
 
     for (i=0;i<atoi(argv[1]);i++){
-        pthread_join(threads[i],NULL);
+        pthread_join(threads[i],NULL); //FAZER O PROCESSO INVERSO!!!
     }
 
     fim = time(NULL);
