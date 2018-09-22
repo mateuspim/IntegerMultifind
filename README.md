@@ -2,7 +2,7 @@ Integer Multifind
 
 Objective:
 This project aims to create a program that uses multiple threads to find an integer value in several (݊ n ≥ 1) files with integer values in different quantities.
-All this operation - reading the files and location of the value - should occur using 2, 4, 8 or 16 threads, at the discretion of the user. The program must be written to the Linux operating system and must use the POSIX Threads library.
+All this operation - reading the files and location of the value - should occur using 2, 4, 8 or 16 threads, at the discretion of the user. The program was written to the Linux operating system and use the POSIX Threads Library.
 
 Contributors (sorted alphabetically):
 * [Andrey Okamura](https://github.com/okamuratoshi)
