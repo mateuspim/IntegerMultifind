@@ -1,7 +1,7 @@
 # Standard compiler, compilation flags, dependencies and object files.
 CC = gcc
-CFLAGS = -I.
-DEPS = 
+CFLAGS = -lpthread
+DEPS =
 OBJ = p2.o
 
 # DEPS macro declaration.
