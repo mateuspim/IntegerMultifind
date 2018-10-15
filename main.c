@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <semaphore.h>
 
-#define fname "final.in"
+#define fname "final.txt"
 
 typedef struct intMult{
     int nsearch;
@@ -14,48 +15,72 @@ typedef struct intMult{
 }intMulti;
 
 
+sem_t mutex_nThreads, pThread;
+int nThreads = 0;
+int maxThreads = 0;
+
 int Inserir_fim_LS     (intMulti **inicio, char * v,int n);
 int Listar_LS          (intMulti *inicio,intMulti *v[]);
 void *Integer_multifind(void *s);
+void integerMultifinder(intMulti * s);
 void writeList();
 void iniList();
 
-
-
-void *Integer_multifind(void *s){
-    
-    FILE *ftread;
-
+void integerMultifinder(intMulti * a)
+{
     register int lineNumber = 1;
     register int nScanned = 0;
     int scanned;
 
-    intMulti * a = (intMulti *)s;
-    
-    FILE * fp;
-    fp = fopen(fname,"a");
     printf("%s: ",a->v);
-    fprintf(fp,"%s: ",a->v);
 
     while (fscanf(a->fp,"%d ",&scanned)!=EOF)
     {
         if (scanned==(int)(a->nsearch))
         {
-            fprintf(fp,"%d ",lineNumber);
+            printf("%d ",lineNumber);
             nScanned++;
         }
         lineNumber++; 
     }
-    
+
     if (nScanned==0)
-        fprintf(fp,"not_found");
-    fprintf(fp,"\n");
+        printf("not_found");
+    printf("\n");
 
-    fclose(fp);
     fclose(a->fp);
-    free(a);        
+    free(a);
+}
 
-    pthread_exit(EXIT_SUCCESS);
+void *Integer_multifind(void *s){
+    
+    intMulti * a = (intMulti *)s;
+    
+    sem_wait(&mutex_nThreads);
+    nThreads++;
+
+    if(nThreads == maxThreads)
+    {
+        sem_wait(&pThread);
+        puts("ESPERANDO!");
+    }
+      
+    sem_post(&mutex_nThreads);
+
+    integerMultifinder(a);
+
+    sem_wait(&mutex_nThreads);
+    nThreads--;
+    
+     if (nThreads < maxThreads)
+     {
+        sem_post(&pThread);
+        puts("Thread livre");
+     }
+    sem_post(&mutex_nThreads);
+    
+
+    pthread_exit(NULL);
 }
 
     
@@ -65,12 +90,16 @@ int main (int argc, char *argv[])
 {
     
     //if (argc < 4){puts("Files missing");return 0;}
-    iniList();
+    //iniList();
+
+    sem_init(&mutex_nThreads, 0, 1);
+    sem_init(&pThread, 0, 1);
 
     time_t inicial,fim;
     
     register int i = 0;
 
+    maxThreads = atoi(argv[1]);
     intMulti * ini = NULL;
     intMulti * v[argc-3];
 
@@ -79,35 +108,37 @@ int main (int argc, char *argv[])
      
     Listar_LS (ini,v);
 
-    pthread_t threads[atoi(argv[1])];
+    pthread_t threads[argc-3];
     
     puts("");
     puts("Threads: ");
     puts("");
 
+
+    // INICIO THREAD
+
     inicial = time(NULL);
 
-   // printf("\n\n%d\n\n",argc-3);
-
-    for (i=0;i<atoi(argv[1]);i++)
-    {
+    for (i=0;i<(argc-3);i++)
        pthread_create(&threads[i],NULL,Integer_multifind,(void *)v[i]); 
           
-    }
-
-    for (i=0;i<atoi(argv[1]);i++)
-    {
+    for (i=(argc-3);i>=0;i--)
        pthread_join(threads[i],NULL);
-    }
+    
 
     fim = time(NULL);
 
-    puts("");
-    writeList();
+    // FIM THREAD
+    puts("FIM DAS THREADS");
+    //writeList();
     puts("");
     printf("TEMPO total: %lds   ini: %lds   fim: %lds",fim-inicial,inicial,fim);
     
-    
+    sem_destroy(&mutex_nThreads);
+    sem_destroy(&pThread);
+
+    pthread_exit(NULL);
+
     return 0;
 }
 
