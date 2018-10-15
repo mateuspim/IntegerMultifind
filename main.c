@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-#define fname "final.txt"
+#define fname "final.in"
 
 typedef struct intMult{
     int nsearch;
