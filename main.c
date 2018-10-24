@@ -59,7 +59,7 @@ void *Integer_multifind(void *s){
     sem_wait(&mutex_nThreads);
     nThreads++;
 
-    if(nThreads == maxThreads)
+    if(nThreads >= maxThreads)
     {
         sem_wait(&pThread);
         puts("ESPERANDO!");
