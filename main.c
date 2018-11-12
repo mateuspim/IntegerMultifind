@@ -1,222 +1,118 @@
 #include <stdio.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <semaphore.h>
+#include <pthread.h>
+#include <sys/time.h>
 
-#define fname "final.txt"
+#include "foo.h"
 
-typedef struct intMult{
-    int nsearch;
-    char v[100];
-    FILE * fp;
-    struct intMult * prox;
-}intMulti;
+int nThreads = 0;       // number of Threads
+int cThreads = 0;      // current Thread
+int arrayIndex = 0;   // valor base para inicio e fim da busca pelo array
 
-
-sem_t mutex_nThreads, pThread;
-int nThreads = 0;
-int maxThreads = 0;
-
-int Inserir_fim_LS     (intMulti **inicio, char * v,int n);
-int Listar_LS          (intMulti *inicio,intMulti *v[]);
-void *Integer_multifind(void *s);
-void integerMultifinder(intMulti * s);
-void writeList();
-void iniList();
-
-void integerMultifinder(intMulti * a)
-{
-    register int lineNumber = 1;
-    register int nScanned = 0;
-    int scanned;
-
-    printf("%s: ",a->v);
-
-    while (fscanf(a->fp,"%d ",&scanned)!=EOF)
-    {
-        if (scanned==(int)(a->nsearch))
-        {
-            printf("%d ",lineNumber);
-            nScanned++;
-        }
-        lineNumber++; 
-    }
-
-    if (nScanned==0)
-        printf("not_found");
-    printf("\n");
-
-    fclose(a->fp);
-    free(a);
-}
-
-void *Integer_multifind(void *s){
-    
-    intMulti * a = (intMulti *)s;
-    
-    sem_wait(&mutex_nThreads);
-    nThreads++;
-
-    if(nThreads >= maxThreads)
-    {
-        sem_wait(&pThread);
-        puts("ESPERANDO!");
-    }
-      
-    sem_post(&mutex_nThreads);
-
-    integerMultifinder(a);
-
-    sem_wait(&mutex_nThreads);
-    nThreads--;
-    
-     if (nThreads < maxThreads)
-     {
-        sem_post(&pThread);
-        puts("Thread livre");
-     }
-    sem_post(&mutex_nThreads);
-    
-
-    pthread_exit(NULL);
-}
-
-    
  //     0       1   2   3       4       5
  // ./multifind 16 123 arq1.in arq2.in arq3.in 
 int main (int argc, char *argv[])
 {
     
-    //if (argc < 4){puts("Files missing");return 0;}
-    //iniList();
+    register int i;
 
-    sem_init(&mutex_nThreads, 0, 1);
-    sem_init(&pThread, 0, 1);
+    struct timeval start, stop;                          // VARIAVEIS DE TEMPO
+    double secsLeitura,secsThreads,secsPrint,secsTotal; // iniciando variaveis para alocar o tempo
 
-    time_t inicial,fim;
+    //Inicio da etapa de leitura dos arquivos
+
+    gettimeofday(&start, NULL); 
+
+    intMulti * ini = initArray(); // Inicializar o intmult e vetor de int com &cap valores
     
-    register int i = 0;
+    nThreads = atoi(argv[1]);       // numero de Threads
+    ini->nSearch = atoi(argv[2]);   // numero de busca
 
-    maxThreads = atoi(argv[1]);
-    intMulti * ini = NULL;
-    intMulti * v[argc-3];
+    for (i = 3;i<argc;i++) // Leitura e inserircao os valores
+    {
+        (ini->array[ini->top]) = -1;    // valor para delimitar os sub-array de cada arquivo de entrada
+        ini->top++;
+        insertInteger(argv[i],ini);
+    }
+  
+    //printf("\nTOP: %d   TAM:%d\n\n",ini->top,ini->tam); // debug.log(Mostrar tam e o indice do ultimo elemento da struct)
 
-    for (i = 3;i<argc;i++)
-       Inserir_fim_LS (&ini, argv[i],atoi(argv[2]));
-     
-    Listar_LS (ini,v);
+    vintMulti *vInt[nThreads];            // Struct passada a Thread com inicio e fim
+    arrayIndex = ini->top/nThreads;       // Valor base para o vetor
 
-    pthread_t threads[argc-3];
+    for(i = 0;i<nThreads;i++)       // Criando e passando os valores inicias e finais de busca para as struct struct que, por sua vez, sera passada para a thread
+    {
+        vInt[i] = (vintMulti *) malloc(sizeof(vintMulti));
+        vInt[i]-> nSearch = atoi(argv[2]);
+        vInt[i]-> array = ini->array;
+
+        if (i==0)       // Se for o primeiro, inicio = 0 fim = valor base;
+        {
+            vInt[i]->ini = 0;
+            vInt[i]->fim = arrayIndex;
+        }
+        else if (i==nThreads-1) // Se for o ultimo, inicio = valor base * (valor ultima thread - 1) fim = ultimo indice do vetor
+        {
+            vInt[i]->ini = (nThreads - 1)*arrayIndex;
+            vInt[i]->fim = ini->top;
+        }
+        else        // Se nao ,para as struct intermediarias, inicio = valor da thread atual * valor o base fim = (valor da thread atual + 1) * valor o base
+        {
+            vInt[i]->ini = (cThreads)*arrayIndex;
+            vInt[i]->fim = (cThreads + 1)*arrayIndex;
+        }
+        cThreads++;
+        //printf("vintMulti[%d]   -> Inicio: %d    fim: %d\n",i,vInt[i]->ini,vInt[i]->fim); // Debug.log(Mostra os valores inicio e fim para cada struct)
+    }
+
+
+	gettimeofday(&stop, NULL);
+
+    secsLeitura = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
     
-    puts("");
-    puts("Threads: ");
-    puts("");
+    //Fim da etapa de leitura dos arquivos
 
+    //Inicio da etapa da construcao e execucao das THREADS
+	
+    gettimeofday(&start, NULL);
 
-    // INICIO THREAD
+    pthread_t threads[nThreads]; // Iniciacao das threads
 
-    inicial = time(NULL);
-
-    for (i=0;i<(argc-3);i++)
-       pthread_create(&threads[i],NULL,Integer_multifind,(void *)v[i]); 
+    for (i=0;i<nThreads;i++)
+       pthread_create(&threads[i],NULL,integerMultifind,(void *)vInt[i]); 
           
-    for (i=(argc-3);i>=0;i--)
+    for (i=0;i<nThreads;i++)
        pthread_join(threads[i],NULL);
-    
 
-    fim = time(NULL);
+    gettimeofday(&stop, NULL);
 
-    // FIM THREAD
-    puts("FIM DAS THREADS");
-    //writeList();
-    puts("");
-    printf("TEMPO total: %lds   ini: %lds   fim: %lds",fim-inicial,inicial,fim);
+    secsThreads = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+
+    //Fim da etapa da construcao e execucao das THREADS
+
+    //Inicio da etapa final -> printar o resultado na tela
+
+    gettimeofday(&start, NULL);
+
+    printNumArray(ini,argv); //Print final
     
-    sem_destroy(&mutex_nThreads);
-    sem_destroy(&pThread);
+    gettimeofday(&stop, NULL);
+
+    secsPrint = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+
+    //Fim da etapa final -> printar o resultado na tela
+
+    //Fim da execucao do programa mostrando os valores de tempo para cada etapa do programa
+    secsTotal = secsLeitura + secsThreads + secsPrint;
+    printf("\n\nTempo total: %fs\n",secsTotal);
+    printf("Tempo para leitura: %fs\n",secsLeitura);
+    printf("Tempo das threads: %fs\n",secsThreads);
+    printf("Tempo para print final: %fs\n",secsPrint);
 
     pthread_exit(NULL);
 
     return 0;
 }
 
-
-int Inserir_fim_LS (intMulti **inicio, char * v,int n)
-{
-    intMulti *no_novo, *percorre;
-    FILE * fp;
-
-    fp = fopen(v,"r");
-    if (fp == NULL)
-    {
-        printf("\nArquivo nao encontrado ou com falhas: %s\n",v);
-        return 0;
-    }
-    else
-    {
-
-    no_novo = (intMulti *) malloc(sizeof(intMulti));
-
-    strcpy(no_novo->v,v);
-    no_novo -> fp = fp;
-    no_novo -> prox = NULL;
-    no_novo -> nsearch = n;
-            
-    if (*inicio==NULL)
-	{ 
-	    *inicio = no_novo;
-	}
-	else 
-    { 
-	     percorre = *inicio;
-	     while (percorre->prox != NULL)
-	     {
-	         percorre = percorre -> prox;
-	     }
-	    percorre->prox = no_novo;
-	}
-
-    }
-	return 0;
-}
-
-int Listar_LS (intMulti *inicio,intMulti *v[])
-{
-	int i = 0;
-	if (inicio == NULL)
-	{
-        return 1;  
-	}
-    printf("LISTANDO ::  ");
-	while (inicio != NULL) {
-
-        v[i] = inicio;
-		printf("%s  ",v[i]->v);
-        //printf("%d  ",v[i]->fp);
-		inicio = inicio->prox;
-        i++;
-    }
-    printf("\n");
-	return 0; 
-} 
-
-void writeList()
-{
-    char ch;
-    FILE * fp;
-    fp = fopen(fname,"r");
-
-    while (fscanf(fp,"%c",&ch)!=EOF)
-        putchar(ch);
-    fclose(fp);
-}
-
-void iniList()
-{
-    FILE * fp;
-    fp = fopen(fname,"w");
-    fclose(fp);
-
-}
