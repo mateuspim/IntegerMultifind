@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -lpthread
 DEPS =
-OBJ = p2.o
+OBJ = main.o foo.o
 
 # DEPS macro declaration.
 # First the compiler compiles the object files and then compiles the
