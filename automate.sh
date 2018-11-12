@@ -87,11 +87,15 @@ then
 fi
 echo "\e[1;97mEnter the number of threads to be used (2, 4, 8, or 16):\e[0;34m"
 read numThreads
+echo "\e[1;97mDo you want to save a copy of the generated data on disk? (y or n)\e[0;34m"
+read fileResponse
 #TODO: create functions to make the code leaner and more comprehensible.
 case $numThreads in
-	2)
+2)
+	case $fileResponse in
+	'y')
 		echo "\e[0m"
-		./multifind $numThreads $num *.in
+		./multifind $numThreads $num *.in > out.txt
 		echo "\e[1;4;32mRemoving\e[24m the garbage"
 		rm -rf *.in
 		rm -rf multifind
@@ -103,8 +107,8 @@ case $numThreads in
 		echo "\e[7mBye!\e[0m"
 		sleep 1
 		clear
-		;;
-	4)
+	;;
+	'n')
 		echo "\e[0m"
 		./multifind $numThreads $num *.in
 		echo "\e[1;4;32mRemoving\e[24m the garbage"
@@ -116,12 +120,16 @@ case $numThreads in
 		clear
 		echo "Exiting..."
 		echo "\e[7mBye!\e[0m"
-		sleep 1
+		leep 1
 		clear
-		;;
-	8)
+	;;
+	esac
+;;
+4)
+	case $fileResponse in
+	'y')
 		echo "\e[0m"
-		./multifind $numThreads $num *.in
+		./multifind $numThreads $num *.in > out.txt
 		echo "\e[1;4;32mRemoving\e[24m the garbage"
 		rm -rf *.in
 		rm -rf multifind
@@ -133,8 +141,8 @@ case $numThreads in
 		echo "\e[7mBye!\e[0m"
 		sleep 1
 		clear
-		;;
-	16)
+	;;
+	'n')
 		echo "\e[0m"
 		./multifind $numThreads $num *.in
 		echo "\e[1;4;32mRemoving\e[24m the garbage"
@@ -146,16 +154,20 @@ case $numThreads in
 		clear
 		echo "Exiting..."
 		echo "\e[7mBye!\e[0m"
-		sleep 1
+		leep 1
 		clear
-		;;
-	*)
-		echo "\e[1;32mThe number you entered is invalid"
-		sleep 1
-		echo "\e[4mRemoving\e[24m the garbage"
+	;;
+	esac
+;;
+8)
+	case $fileResponse in
+	'y')
+		echo "\e[0m"
+		./multifind $numThreads $num *.in > out.txt
+		echo "\e[1;4;32mRemoving\e[24m the garbage"
 		rm -rf *.in
 		rm -rf multifind
-		echo "\e[1;32mGarbage removed \e[7msuccessfully!\e[0m"
+		echo "Garbage removed \e[7msuccessfully!\e[0m"
 		echo "\e[1;32mPress any key to exit"
 		read key
 		clear
@@ -163,5 +175,71 @@ case $numThreads in
 		echo "\e[7mBye!\e[0m"
 		sleep 1
 		clear
-		;;
+	;;
+	'n')
+		echo "\e[0m"
+		./multifind $numThreads $num *.in
+		echo "\e[1;4;32mRemoving\e[24m the garbage"
+		rm -rf *.in
+		rm -rf multifind
+		echo "Garbage removed \e[7msuccessfully!\e[0m"
+		echo "\e[1;32mPress any key to exit"
+		read key
+		clear
+		echo "Exiting..."
+		echo "\e[7mBye!\e[0m"
+		leep 1
+		clear
+	;;
+	esac
+;;
+16)
+	case $fileResponse in
+	'y')
+		echo "\e[0m"
+		./multifind $numThreads $num *.in > out.txt
+		echo "\e[1;4;32mRemoving\e[24m the garbage"
+		rm -rf *.in
+		rm -rf multifind
+		echo "Garbage removed \e[7msuccessfully!\e[0m"
+		echo "\e[1;32mPress any key to exit"
+		read key
+		clear
+		echo "Exiting..."
+		echo "\e[7mBye!\e[0m"
+		sleep 1
+		clear
+	;;
+	'n')
+		echo "\e[0m"
+		./multifind $numThreads $num *.in
+		echo "\e[1;4;32mRemoving\e[24m the garbage"
+		rm -rf *.in
+		rm -rf multifind
+		echo "Garbage removed \e[7msuccessfully!\e[0m"
+		echo "\e[1;32mPress any key to exit"
+		read key
+		clear
+		echo "Exiting..."
+		echo "\e[7mBye!\e[0m"
+		leep 1
+		clear
+	;;
+	esac
+;;
+*)
+	echo "\e[1;32mThe number you entered is invalid"
+	sleep 1
+	echo "\e[4mRemoving\e[24m the garbage"
+	rm -rf *.in
+	rm -rf multifind
+	echo "\e[1;32mGarbage removed \e[7msuccessfully!\e[0m"
+	echo "\e[1;32mPress any key to exit"
+	read key
+	clear
+	echo "Exiting..."
+	echo "\e[7mBye!\e[0m"
+	sleep 1
+	clear
+;;
 esac
