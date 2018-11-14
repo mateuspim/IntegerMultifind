@@ -7,13 +7,14 @@
 
 #include "foo.h"
 
-#define cap 1000000 //capacidade total do array
+#define cap 10000000 //capacidade total do array
 
+//Funcao para procura dos valores dentro do array
 void integerMultifinder(vintMulti * a)
 {
-    register int i = 0;
+    register long int i = 0;
 
-    printf("\nIndo de:%d    ate:%d\n",a->ini,a->fim);
+    // printf("\nThread: Indo de:%d    ate:%d\n",a->ini,a->fim); // Debug.log(Mostrar os valores de inicio e fim de procura do array da thread atual)
 
     for(i=a->ini;i<a->fim;i++)
     {
@@ -24,6 +25,7 @@ void integerMultifinder(vintMulti * a)
     }
 }
 
+//Funcao da thread
 void *integerMultifind(void *s){
     
     vintMulti * a = (vintMulti *)s;
@@ -33,6 +35,7 @@ void *integerMultifind(void *s){
     pthread_exit(NULL);
 }
 
+//Funcao para inicializar a struct e o array
 intMulti * initArray()
 {
     intMulti * a;
@@ -46,33 +49,42 @@ intMulti * initArray()
     return a;
 }
 
+//Funcao para reallocar o tamanho total do array
 void reallocArray(intMulti *a)
 {
     a->tam += cap;
     a->array = (int *) realloc(a->array, a->tam * sizeof(int));
 }
 
+//Funcao para ler os valores do arquivo e inseri-los no array
 void insertInteger(char *v,intMulti *a)
 {
     FILE *fp;
+
     fp = fopen(v,"r");
 
-    int scanned;
-
-    while(fscanf(fp,"%d ",&scanned)!=EOF)
+    if (fp==NULL)
     {
-        if  (a->top==a->tam)
-        {
-            reallocArray(a);
-        }
-
-        a->array[a->top++] = scanned;
+        printf("\nArquivo nao encontrado: %s",v);
     }
+    else
+    {
+        int scanned;
 
+        while(fscanf(fp,"%d ",&scanned)!=EOF)
+        {
+            if  (a->top==a->tam)
+            {
+                reallocArray(a);
+            }
+
+            a->array[a->top++] = scanned;
+        }
+    }
     fclose(fp);
 }
 
-
+//Funcao para printar os valores do array
 void printN(intMulti *a)
 {
     for(register int i=0;i<a->top;i++)
@@ -82,6 +94,7 @@ void printN(intMulti *a)
 
 }
 
+//Funcao para printar os valores do array apos a execucao das threads
 void printNumArray(intMulti *a,char **v)
 {
     puts("");

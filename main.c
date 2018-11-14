@@ -15,6 +15,18 @@ int arrayIndex = 0;   // valor base para inicio e fim da busca pelo array
  // ./multifind 16 123 arq1.in arq2.in arq3.in 
 int main (int argc, char *argv[])
 {
+    if (atoi(argv[1])!=2 && atoi(argv[1])!=4 && atoi(argv[1])!=8  && atoi(argv[1])!=16) //Verifica o numero de threads inserida
+    {
+        puts("\nNumero de threads invalida");
+        return 1;
+    }
+
+    if (argc<4) //Verifica se foi passado os arquivos de leitura
+    {
+        puts("\nArquivos nao passados na execucao");
+        return 1;
+    }
+          
     
     register int i;
 
@@ -30,7 +42,7 @@ int main (int argc, char *argv[])
     nThreads = atoi(argv[1]);       // numero de Threads
     ini->nSearch = atoi(argv[2]);   // numero de busca
 
-    for (i = 3;i<argc;i++) // Leitura e inserircao os valores
+    for (i = 3;i<argc;i++) // Leitura e insercao dos valores
     {
         (ini->array[ini->top]) = -1;    // valor para delimitar os sub-array de cada arquivo de entrada
         ini->top++;
@@ -64,7 +76,7 @@ int main (int argc, char *argv[])
             vInt[i]->fim = (cThreads + 1)*arrayIndex;
         }
         cThreads++;
-        //printf("vintMulti[%d]   -> Inicio: %d    fim: %d\n",i,vInt[i]->ini,vInt[i]->fim); // Debug.log(Mostra os valores inicio e fim para cada struct)
+        // printf("vintMulti[%d]   -> Inicio: %d    fim: %d\n",i,vInt[i]->ini,vInt[i]->fim); // Debug.log(Mostra os valores inicio e fim para cada struct)
     }
 
 
@@ -77,17 +89,17 @@ int main (int argc, char *argv[])
     //Inicio da etapa da construcao e execucao das THREADS
 	
     gettimeofday(&start, NULL);
-
+    
     pthread_t threads[nThreads]; // Iniciacao das threads
 
     for (i=0;i<nThreads;i++)
-       pthread_create(&threads[i],NULL,integerMultifind,(void *)vInt[i]); 
+       pthread_create(&threads[i],NULL,integerMultifind,(void *)vInt[i]); // Criando as Threads e passando para elas o endereço da struct com seus respectivos inicio e fim de busca
           
     for (i=0;i<nThreads;i++)
-       pthread_join(threads[i],NULL);
-
+       pthread_join(threads[i],NULL);   // Concatenando e finalizando as threads
+       
     gettimeofday(&stop, NULL);
-
+    
     secsThreads = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
 
     //Fim da etapa da construcao e execucao das THREADS
@@ -96,7 +108,7 @@ int main (int argc, char *argv[])
 
     gettimeofday(&start, NULL);
 
-    printNumArray(ini,argv); //Print final
+    printNumArray(ini,argv); // Print final 
     
     gettimeofday(&stop, NULL);
 

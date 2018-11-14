@@ -19,7 +19,7 @@ typedef struct intMult2
 
 
 void *integerMultifind(void *s);            // Funcao da thread
-void integerMultifinder(vintMulti * a);    // Funcao que a thread executa
+void integerMultifinder(vintMulti * a);    // Funcao que a thread executa -> caso ache o valor no array muda para -2
 
 
 intMulti * initArray();                       // Inicializacao da struct que contera o array e metadados do array
